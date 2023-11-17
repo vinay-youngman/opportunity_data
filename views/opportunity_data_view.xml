@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<odoo>
+    <record id="view_partner_opportunity_stats_tree" model="ir.ui.view">
+            <field name="name">opportunity.data.tree</field>
+            <field name="model">opportunity.data</field>
+            <field name="arch" type="xml">
+                <tree>
+                    <field name="sales_person_id"/>
+                    <field name="name"/>
+                    <field name="total_needs_identified_count"/>
+                    <field name="total_expected_revenue_needs_identified"/>
+                    <field name="total_quotation_sent_count"/>
+                    <field name="total_expected_revenue_quotation_sent"/>
+                    <field name="total_opportunites_created_today"/>
+                    <field name="total_won_count"/>
+                    <field name="total_expected_revenue_won"/>
+                    <field name="total_lost_count"/>
+                    <field name="total_expected_revenue_lost"/>
+                </tree>
+            </field>
+        </record>
+
+<record id="action_opportunity_data_tree" model="ir.actions.act_window">
+        <field name="name">Opportunity Data</field>
+        <field name="res_model">opportunity.data</field>
+        <field name="view_mode">tree</field>
+        <field name="view_id" ref="view_partner_opportunity_stats_tree"/>
+    </record>
+
+    <record model="ir.actions.server" id="opportunity_data_function_call">
+        <field name="name">Method To Call The Sql Query</field>
+        <field name="model_id" ref="opportunity_data.model_opportunity_data"/>
+        <field name="state">code</field>
+        <field name="code">model.update_partner_opportunity_stats()</field>
+    </record>
+
+    <menuitem id="opportunity_data_root" name="Opportunity Dashboard" sequence="2"/>
+    <menuitem id="opportunity_data" name="Opportunity Data" parent="opportunity_data_root" action="action_opportunity_data_tree" sequence="3"/>
+    <menuitem id="opportunity_data_update" name="UPDATE DATA" parent="opportunity_data" action="opportunity_data.opportunity_data_function_call" sequence="4"/>
+</odoo>
