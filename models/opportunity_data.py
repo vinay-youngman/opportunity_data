@@ -30,7 +30,9 @@ class OpportunityData(models.TransientModel):
             self.env.cr.commit()
 
             query = """
-           
+
+
+
 WITH NeedsIdentification AS (
     SELECT
         res_users.login AS Login,
@@ -129,10 +131,20 @@ LostOpportunities AS (
     GROUP BY
         res_users.login,
         COALESCE(res_partner.name, 'No Master Customer')
+),
+Salesperson AS (
+    SELECT
+        res_partner.name AS Salesperson_Name,
+        res_users.login AS Login
+    FROM
+        res_users
+    INNER JOIN res_partner ON partner_id = res_partner.id
 )
+
 SELECT
-    COALESCE(NI.Login, QS.Login, TOp.Login, WL.Login, LO.Login) AS Login,
+    Salesperson.Salesperson_Name,
     COALESCE(NI.Master_customer, QS.Master_customer, TOp.Master_customer, WL.Master_customer, LO.Master_customer) AS Master_customer,
+
     SUM(COALESCE(NI.total_needs_identification_count, 0)) AS total_needs_identification_count,
     SUM(COALESCE(NI.total_needs_identification_count_expected_revenue, 0)) AS total_needs_identification_count_expected_revenue,
     SUM(COALESCE(QS.total_quotation_sent_count, 0)) AS total_quotation_sent_count,
@@ -142,13 +154,15 @@ SELECT
     SUM(COALESCE(WL.total_won_count_on_that_day_expected_revenue, 0)) AS total_won_count_on_that_day_expected_revenue,
     SUM(COALESCE(LO.total_lost_count, 0)) AS total_lost_count,
     SUM(COALESCE(LO.total_lost_count_expected_revenue, 0)) AS total_lost_count_expected_revenue
-FROM NeedsIdentification NI
+FROM
+    NeedsIdentification NI
 FULL JOIN QuotationSent QS ON NI.Login = QS.Login AND NI.Master_customer = QS.Master_customer
 FULL JOIN TotalOpportunities TOp ON TOp.Login = COALESCE(NI.Login, QS.Login) AND TOp.Master_customer = COALESCE(NI.Master_customer, QS.Master_customer)
 FULL JOIN WonLost WL ON COALESCE(NI.Login, QS.Login, TOp.Login) = WL.Login AND COALESCE(NI.Master_customer, QS.Master_customer, TOp.Master_customer) = WL.Master_customer
 FULL JOIN LostOpportunities LO ON COALESCE(NI.Login, QS.Login, TOp.Login, WL.Login) = LO.Login AND COALESCE(NI.Master_customer, QS.Master_customer, TOp.Master_customer, WL.Master_customer) = LO.Master_customer
+LEFT JOIN Salesperson ON COALESCE(NI.Login, QS.Login, TOp.Login, WL.Login, LO.Login) = Salesperson.Login
 GROUP BY
-    COALESCE(NI.Login, QS.Login, TOp.Login, WL.Login, LO.Login),
+    Salesperson.Salesperson_Name,
     COALESCE(NI.Master_customer, QS.Master_customer, TOp.Master_customer, WL.Master_customer, LO.Master_customer);
             """
             self.env.cr.execute(query)
