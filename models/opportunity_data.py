@@ -31,8 +31,6 @@ class OpportunityData(models.TransientModel):
 
             query = """
 
-
-
 WITH NeedsIdentification AS (
     SELECT
         res_users.login AS Login,
@@ -154,8 +152,7 @@ SELECT
     SUM(COALESCE(WL.total_won_count_on_that_day_expected_revenue, 0)) AS total_won_count_on_that_day_expected_revenue,
     SUM(COALESCE(LO.total_lost_count, 0)) AS total_lost_count,
     SUM(COALESCE(LO.total_lost_count_expected_revenue, 0)) AS total_lost_count_expected_revenue
-FROM
-    NeedsIdentification NI
+FROM NeedsIdentification NI
 FULL JOIN QuotationSent QS ON NI.Login = QS.Login AND NI.Master_customer = QS.Master_customer
 FULL JOIN TotalOpportunities TOp ON TOp.Login = COALESCE(NI.Login, QS.Login) AND TOp.Master_customer = COALESCE(NI.Master_customer, QS.Master_customer)
 FULL JOIN WonLost WL ON COALESCE(NI.Login, QS.Login, TOp.Login) = WL.Login AND COALESCE(NI.Master_customer, QS.Master_customer, TOp.Master_customer) = WL.Master_customer
